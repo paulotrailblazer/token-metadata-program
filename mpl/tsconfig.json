@@ -1,0 +1,14 @@
+{
+    "compilerOptions": {
+        "resolveJsonModule": true,
+        "esModuleInterop": true,
+        "outDir": "./built",
+        "allowJs": true,
+        "target": "es5",
+        "module": "commonjs",
+        "sourceMap": true
+    },
+    "include": [
+        "./src/**/*"
+    ]
+}

@@ -2,36 +2,36 @@
 import * as mpl from "@metaplex-foundation/mpl-token-metadata";
 import * as web3 from "@solana/web3.js";
 import * as anchor from '@project-serum/anchor';
-
-export function loadWalletKey(keypairFile:string): web3.Keypair {
+const data = require("../config/metadata.json");
+export function loadWalletKey(keypairFile: string): web3.Keypair {
     const fs = require("fs");
     const loaded = web3.Keypair.fromSecretKey(
-      new Uint8Array(JSON.parse(fs.readFileSync(keypairFile).toString())),
+        new Uint8Array(JSON.parse(fs.readFileSync(keypairFile).toString())),
     );
     return loaded;
-  }
+}
 
 const INITIALIZE = false;
 
-async function main(){
+async function main() {
     console.log("let's name some tokens!");
-    const myKeypair = loadWalletKey("Your Keypair");
-    const mint = new web3.PublicKey("Your Token Address");
+    const myKeypair = loadWalletKey("C://Users//profe//.config//solana//id.json");
+    const mint = new web3.PublicKey("67bW3Zeqfj6TLxLJeGA1WT6PxNbLda7ikX713BxZNyvU");
     const seed1 = Buffer.from(anchor.utils.bytes.utf8.encode("metadata"));
     const seed2 = Buffer.from(mpl.PROGRAM_ID.toBytes());
     const seed3 = Buffer.from(mint.toBytes());
     const [metadataPDA, _bump] = web3.PublicKey.findProgramAddressSync([seed1, seed2, seed3], mpl.PROGRAM_ID);
-    const accounts = {
+    const accounts: mpl.CreateMetadataAccountV2InstructionAccounts = {
         metadata: metadataPDA,
         mint,
         mintAuthority: myKeypair.publicKey,
         payer: myKeypair.publicKey,
         updateAuthority: myKeypair.publicKey,
     }
-    const dataV2 = {
-        name: " Your Token Name",
-        symbol: " Your Token Symbol",
-        uri: "Image Url upload",
+    const dataV2: mpl.DataV2 = {
+        name: " Fintech International Token",
+        symbol: "FNRZR",
+        uri: "https://raw.githubusercontent.com/BCusack/crypto/main/logo.png",
         // we don't need that
         sellerFeeBasisPoints: 0,
         creators: null,
@@ -40,7 +40,7 @@ async function main(){
     }
     let ix;
     if (INITIALIZE) {
-        const args =  {
+        const args = {
             createMetadataAccountArgsV2: {
                 data: dataV2,
                 isMutable: true
@@ -48,7 +48,7 @@ async function main(){
         };
         ix = mpl.createCreateMetadataAccountV2Instruction(accounts, args);
     } else {
-        const args =  {
+        const args: mpl.UpdateMetadataAccountV2InstructionArgs = {
             updateMetadataAccountArgsV2: {
                 data: dataV2,
                 isMutable: true,
