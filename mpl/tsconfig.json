@@ -1,7 +1,12 @@
 {
     "compilerOptions": {
         "resolveJsonModule": true,
+        "watch": true,
         "esModuleInterop": true,
+        "lib": [
+            "DOM",
+            "es2017"
+        ],
         "outDir": "./built",
         "allowJs": true,
         "target": "es5",
