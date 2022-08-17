@@ -1,12 +1,19 @@
 {
     "compilerOptions": {
-        "target": "ESNext",
-        "rootDir": "./src",
-        "module": "commonjs",
-        "sourceMap": true,
+        "resolveJsonModule": true,
+        "watch": true,
+        "esModuleInterop": true,
         "lib": [
-            "es6",
-            "dom"
-        ]
-    }
+            "DOM",
+            "es2017"
+        ],
+        "outDir": "./built",
+        "allowJs": true,
+        "target": "es5",
+        "module": "commonjs",
+        "sourceMap": true
+    },
+    "include": [
+        "./src/**/*.ts"
+    ]
 }
