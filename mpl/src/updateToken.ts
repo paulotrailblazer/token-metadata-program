@@ -1,34 +1,46 @@
-import * as mpl from "@metaplex-foundation/mpl-token-metadata";
+import {
+    PROGRAM_ID, UpdateMetadataAccountV2InstructionAccounts,
+    DataV2, UpdateMetadataAccountV2InstructionArgs, createUpdateMetadataAccountV2Instruction
+} from "@metaplex-foundation/mpl-token-metadata";
+import { Keypair, PublicKey, Connection, Transaction, sendAndConfirmTransaction, TransactionInstruction, clusterApiUrl } from "@solana/web3.js";
+import { utils } from '@project-serum/anchor';
+import data from "../config/config.json";
 
-import * as web3 from "@solana/web3.js";
-import * as anchor from '@project-serum/anchor';
-const data = require("../config/metadata.json");
-
-export function loadWalletKey(keypairFile: string): web3.Keypair {
+/**
+ *
+ * @param keypairFile : Keypair
+ * @returns Keypair from file
+ */
+export function loadWalletKey(keypairFile: string): Keypair {
     const fs = require("fs");
-    const loaded = web3.Keypair.fromSecretKey(
+    const loaded = Keypair.fromSecretKey(
         new Uint8Array(JSON.parse(fs.readFileSync(keypairFile).toString())),
     );
     return loaded;
 }
 
+/**
+* Run the script
+*/
 async function main() {
-
     console.log("Updating metadata for existing metadata account")
     const myKeypair = loadWalletKey("C:/Users/profe/.config/solana/id.json");
     console.log(myKeypair.publicKey.toBase58());
-    // const mint = new web3.PublicKey("HARcNpSQ5zZ2dCci2bg91w9K4pkv222mS9fQMKwQBpxe");
-    const seed1 = Buffer.from(anchor.utils.bytes.utf8.encode('metadata'));
-    const seed2 = Buffer.from(mpl.PROGRAM_ID.toBytes());
-    const seed3 = Buffer.from(myKeypair.publicKey.toBytes());
+    const mint = new PublicKey("HARcNpSQ5zZ2dCci2bg91w9K4pkv222mS9fQMKwQBpxe");
+    const seed1 = Buffer.from(utils.bytes.utf8.encode('metadata'));
+    const seed2 = Buffer.from(PROGRAM_ID.toBytes());
+    const seed3 = Buffer.from(mint.toBytes());
 
-    const [metadataPDA, _bump] = web3.PublicKey.findProgramAddressSync([seed1, seed2, seed3], mpl.PROGRAM_ID);
-    const accounts: mpl.UpdateMetadataAccountV2InstructionAccounts = {
+    const [metadataPDA, _bump] = PublicKey.findProgramAddressSync([seed1, seed2, seed3], PROGRAM_ID);
+    const accounts: UpdateMetadataAccountV2InstructionAccounts = {
         metadata: metadataPDA,
         updateAuthority: myKeypair.publicKey,
     }
-
-    const dataV2: mpl.DataV2 = {
+    /**
+     * Data to update
+     * @type {DataV2}
+     */
+    const dataV2: DataV2 = {
         name: data.name,
         symbol: data.symbol,
         uri: data.uri,
@@ -38,7 +50,11 @@ async function main() {
         collection: null,
         uses: null,
     }
-    const args: mpl.UpdateMetadataAccountV2InstructionArgs = {
+    /**
+     * Arguments for the instruction
+     * @type {UpdateMetadataAccountV2InstructionArgs}
+     */
+    const args: UpdateMetadataAccountV2InstructionArgs = {
         updateMetadataAccountArgsV2:
         {
             data: dataV2,
@@ -47,22 +63,25 @@ async function main() {
             primarySaleHappened: false
         }
     };
-    const connection = new web3.Connection("https://api.mainnet-beta.solana.com");
 
-    console.log("Update data: ", JSON.stringify(args, null, '\t'));
-    const ci = mpl.createUpdateMetadataAccountV2Instruction(accounts, args);
-    const tx = new web3.Transaction();
+    const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
+    let ci: TransactionInstruction = createUpdateMetadataAccountV2Instruction(accounts, args);
+    let tx = new Transaction();
     tx.add(ci);
-    try {
-        const txid = await web3.sendAndConfirmTransaction(connection, tx, [myKeypair]);
-        console.log("Signed transactions response", txid);
-    } catch (err) {
-        console.log("Error:", err);
-    } finally {
-        console.log("done");
-    }
 
-
+    /**
+     * Send the transaction
+     * @type {Promise<string>}
+     * @returns Transaction id
+     */
+    sendAndConfirmTransaction(connection, tx, [myKeypair])
+        .then(txid => {
+            console.log("Transaction id: ", txid);
+        }).catch(err => {
+            console.log("Error: ", err);
+        }).finally(() => {
+            console.log("Done");
+        });
 }
 
 

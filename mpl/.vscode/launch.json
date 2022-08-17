@@ -13,10 +13,10 @@
             ],
             "runtimeArgs": [
                 "-r",
-                "ts-node/register"
+                "ts-node/register",
+                "--trace-warnings"
             ],
             "cwd": "${workspaceRoot}",
-            "protocol": "inspector",
             "internalConsoleOptions": "openOnSessionStart"
         }
     ]
