@@ -11,6 +11,7 @@ Required Dendencies
 # If the the code has help you remmeber to give the repo a star
 
 ## Extended features
+# Big thanks to Max Mofrey
 
 - Create metadata.json and upload to github
 - Copy raw url to metaData.json
