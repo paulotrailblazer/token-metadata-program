@@ -15,4 +15,4 @@ Required Dendencies
 - Create metadata.json and upload to github
 - Copy raw url to metaData.json
 - config.json contains file wallet address publickey and file location 'id.json'
-- Any tips or tricks for configuring project better let me know ;)
+- Any tips or tricks for configuring project better let me know. ;)
