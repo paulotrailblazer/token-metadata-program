@@ -5,8 +5,51 @@ import {
 import { Keypair, PublicKey, Connection, Transaction, sendAndConfirmTransaction, TransactionInstruction, clusterApiUrl } from "@solana/web3.js";
 import { utils } from '@project-serum/anchor';
 import data from "./config/config.json";
+import metaData from "./config/metaData.json";
 
 
+
+/**
+    * Data to update
+    * @type {DataV2}
+    */
+function createDataSet(): DataV2 {
+    return {
+        name: metaData.name,
+        symbol: metaData.symbol,
+        uri: metaData.uri,
+        // we don't need that
+        sellerFeeBasisPoints: 0,
+        creators: null,
+        collection: null,
+        uses: null,
+    };
+}
+
+/**
+    * Arguments for the instruction
+    * @type {UpdateMetadataAccountV2InstructionArgs}
+    */
+function createInstructionSet(dataV2: DataV2, myKeypair: Keypair): UpdateMetadataAccountV2InstructionArgs {
+    return {
+        updateMetadataAccountArgsV2: {
+            data: dataV2,
+            isMutable: true,
+            updateAuthority: myKeypair.publicKey,
+            primarySaleHappened: false
+        }
+    };
+}
+/**
+ *
+ * @param keypairFile : string
+ * @returns Keypair from file
+ */
+function loadWalletKey(keypairFile: string): Keypair {
+    return Keypair.fromSecretKey(
+        new Uint8Array(JSON.parse(require("fs").readFileSync(keypairFile).toString())));
+
+}
 
 /**
 * Run the script
@@ -48,45 +91,4 @@ export async function updateMetaData() {
         }).finally(() => {
             console.log("Done");
         });
-}
-/**
-    * Data to update
-    * @type {DataV2}
-    */
-function createDataSet(): DataV2 {
-    return {
-        name: data.name,
-        symbol: data.symbol,
-        uri: data.uri,
-        // we don't need that
-        sellerFeeBasisPoints: 0,
-        creators: null,
-        collection: null,
-        uses: null,
-    };
-}
-
-/**
-    * Arguments for the instruction
-    * @type {UpdateMetadataAccountV2InstructionArgs}
-    */
-function createInstructionSet(dataV2: DataV2, myKeypair: Keypair): UpdateMetadataAccountV2InstructionArgs {
-    return {
-        updateMetadataAccountArgsV2: {
-            data: dataV2,
-            isMutable: true,
-            updateAuthority: myKeypair.publicKey,
-            primarySaleHappened: false
-        }
-    };
-}
-/**
- *
- * @param keypairFile : string
- * @returns Keypair from file
- */
-function loadWalletKey(keypairFile: string): Keypair {
-    return Keypair.fromSecretKey(
-        new Uint8Array(JSON.parse(require("fs").readFileSync(keypairFile).toString())));
-
 }

@@ -1,11 +1,16 @@
 
-import * as mpl from "@metaplex-foundation/mpl-token-metadata";
-import * as web3 from "@solana/web3.js";
-import * as anchor from '@project-serum/anchor';
-const data = require("../config/metadata.json");
-export function loadWalletKey(keypairFile: string): web3.Keypair {
+import {
+    PROGRAM_ID,
+    DataV2, CreateMetadataAccountV2InstructionAccounts, CreateMetadataAccountV2InstructionArgs, createCreateMetadataAccountV2Instruction, UpdateMetadataAccountV2InstructionArgs, createUpdateMetadataAccountV2Instruction
+} from "@metaplex-foundation/mpl-token-metadata";
+import { Keypair, PublicKey, Connection, Transaction, sendAndConfirmTransaction, TransactionInstruction, clusterApiUrl } from "@solana/web3.js";
+import { utils } from '@project-serum/anchor';
+import data from "../src/config/config.json";
+import metaData from "./config/metaData.json";
+
+export function loadWalletKey(keypairFile: string): Keypair {
     const fs = require("fs");
-    const loaded = web3.Keypair.fromSecretKey(
+    const loaded =Keypair.fromSecretKey(
         new Uint8Array(JSON.parse(fs.readFileSync(keypairFile).toString())),
     );
     return loaded;
@@ -13,25 +18,27 @@ export function loadWalletKey(keypairFile: string): web3.Keypair {
 
 const INITIALIZE = false;
 
-async function main() {
-    console.log("let's name some tokens!");
-    const myKeypair = loadWalletKey("C://Users//profe//.config//solana//id.json");
-    const mint = new web3.PublicKey("67bW3Zeqfj6TLxLJeGA1WT6PxNbLda7ikX713BxZNyvU");
-    const seed1 = Buffer.from(anchor.utils.bytes.utf8.encode("metadata"));
-    const seed2 = Buffer.from(mpl.PROGRAM_ID.toBytes());
+export async function createMetaData() {
+    console.log("Creating metaData account")
+    const myKeypair = loadWalletKey(data.keyFileLocation);
+    console.log(myKeypair.publicKey.toBase58());
+    const mint = new PublicKey(data.keypair);
+    const seed1 = Buffer.from(utils.bytes.utf8.encode('metadata'));
+    const seed2 = Buffer.from(PROGRAM_ID.toBytes());
     const seed3 = Buffer.from(mint.toBytes());
-    const [metadataPDA, _bump] = web3.PublicKey.findProgramAddressSync([seed1, seed2, seed3], mpl.PROGRAM_ID);
-    const accounts: mpl.CreateMetadataAccountV2InstructionAccounts = {
+
+    const [metadataPDA, _bump] = PublicKey.findProgramAddressSync([seed1, seed2, seed3], PROGRAM_ID);
+    const accounts: CreateMetadataAccountV2InstructionAccounts = {
         metadata: metadataPDA,
         mint,
         mintAuthority: myKeypair.publicKey,
         payer: myKeypair.publicKey,
         updateAuthority: myKeypair.publicKey,
     }
-    const dataV2: mpl.DataV2 = {
-        name: data.name,
-        symbol: data.symbol,
-        uri: data.uri,
+    const dataV2: DataV2 = {
+        name: metaData.name,
+        symbol: metaData.symbol,
+        uri: metaData.uri,
         // we don't need that
         sellerFeeBasisPoints: 0,
         creators: null,
@@ -46,9 +53,9 @@ async function main() {
                 isMutable: true
             }
         };
-        ix = mpl.createCreateMetadataAccountV2Instruction(accounts, args);
+        ix = createCreateMetadataAccountV2Instruction(accounts, args);
     } else {
-        const args: mpl.UpdateMetadataAccountV2InstructionArgs = {
+        const args: UpdateMetadataAccountV2InstructionArgs = {
             updateMetadataAccountArgsV2: {
                 data: dataV2,
                 isMutable: true,
@@ -56,14 +63,13 @@ async function main() {
                 primarySaleHappened: true
             }
         };
-        ix = mpl.createUpdateMetadataAccountV2Instruction(accounts, args)
+        ix = createUpdateMetadataAccountV2Instruction(accounts, args)
     }
-    const tx = new web3.Transaction();
+    const tx = new Transaction();
     tx.add(ix);
-    const connection = new web3.Connection("https://api.mainnet-beta.solana.com");
-    const txid = await web3.sendAndConfirmTransaction(connection, tx, [myKeypair]);
+    const connection = new Connection(clusterApiUrl('mainnet-beta'), 'confirmed');
+    const txid = await sendAndConfirmTransaction(connection, tx, [myKeypair]);
     console.log(txid);
 
 }
 
-main();
