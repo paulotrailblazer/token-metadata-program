@@ -3,5 +3,5 @@
     "symbol": "DC",
     "description": "Dragons Coin",
     "image": "https://github.com/paulotrailblazer/token-metadata-program/raw/main/src/config/dragons-coin.jpg",
-    "uri": "https://github.com/paulotrailblazer/token-metadata-program/raw/main/metaData.json"
+    "uri": "https://github.com/paulotrailblazer/token-metadata-program/raw/main/src/config/metaData.json"
 }
